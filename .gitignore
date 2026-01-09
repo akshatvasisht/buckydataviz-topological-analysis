@@ -1,5 +1,8 @@
 # Virtual Environment
 venv/
+env/
+ENV/
+.venv
 
 # Python
 __pycache__/
@@ -7,11 +10,28 @@ __pycache__/
 *$py.class
 *.so
 .Python
+pip-log.txt
+pip-delete-this-directory.txt
 
 # Distribution / packaging
 build/
 dist/
 *.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
 
 # IDE
 .vscode/
@@ -19,7 +39,27 @@ dist/
 *.swp
 *.swo
 *~
+.spyderproject
+.spyproject
+.ropeproject
 
 # OS
 .DS_Store
 Thumbs.db
+*.bak
+*.tmp
+
+# Project-specific
+*.log
+.env
+.envrc
+
+# Generated artifacts (keep in version control but ignore local modifications)
+# Uncomment if you want to ignore generated outputs:
+# analysis/*.png
+# analysis/*.csv
+# docs/*.png
+
+# Temporary files
+*.tmp
+*.temp

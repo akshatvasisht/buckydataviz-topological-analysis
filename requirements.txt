@@ -1,21 +1,46 @@
-contourpy==1.3.3
-cycler==0.12.1
-fonttools==4.61.1
-Jinja2==3.1.6
-joblib==1.5.3
-kiwisolver==1.4.9
-kmapper==2.1.0
-MarkupSafe==3.0.3
-matplotlib==3.10.8
-numpy==2.4.0
-packaging==25.0
-pandas==2.3.3
-pillow==12.1.0
-pyparsing==3.3.1
-python-dateutil==2.9.0.post0
-pytz==2025.2
-scikit-learn==1.8.0
-scipy==1.16.3
-six==1.17.0
-threadpoolctl==3.6.0
-tzdata==2025.3
+# Core Visualization & Topology
+kmapper>=2.1.0
+scikit-learn>=1.3.0
+
+# Data Analysis & Plotting
+matplotlib>=3.7.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0
+scipy>=1.10.0
+seaborn>=0.12.0
+statsmodels>=0.14.0
+
+# Interactive & Notebooks
+ipykernel>=6.20.0
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+notebook>=7.0.0
+
+# Testing & Coverage
+coverage>=7.0.0
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.5.0
+
+# Development Tools
+black>=23.12.0
+flake8>=6.1.0
+isort>=5.13.0
+mypy>=1.7.0
+
+# Support & System Dependencies
+contourpy>=1.0.0
+cycler>=0.10.0
+fonttools>=4.0.0
+Jinja2>=3.1.0
+joblib>=1.3.0
+kiwisolver>=1.4.0
+MarkupSafe>=2.1.0
+packaging>=23.0
+pillow>=10.0.0
+pyparsing>=3.0.0
+python-dateutil>=2.8.0
+pytz>=2023.3
+six>=1.16.0
+threadpoolctl>=3.0.0
+tzdata>=2023.3

@@ -1,40 +1,46 @@
 # Big Ten Fight Song Topological Analysis
 
-## Overview
+![Python](https://img.shields.io/badge/Python-3.7+-blue.svg?logo=python&logoColor=white)
+![TDA](https://img.shields.io/badge/TDA-KeplerMapper-red)
+![Computing](https://img.shields.io/badge/SciPy-Ecosystem-blue?logo=scipy&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Event](https://img.shields.io/badge/Submission-Bucky's%20Data%20Viz%20Challenge%202026-FFD700)
 
-This project applies Topological Data Analysis (TDA) to visualize structural relationships between Big Ten fight songs. Each school is represented as a point in high-dimensional feature space, and the output is a network graph where nodes cluster based on song similarity metrics including tempo, lyrical characteristics, and other audio features.
+**Big Ten Fight Song Topological Analysis** utilizes topological data analysis (TDA) to explore structural patterns in collegiate fight songs. This project was developed for Bucky's Data Viz Challenge to investigate potential relationships between musical characteristics and historical athletic success in an exploratory context. This project integrates the [FiveThirtyEight Fight Song Dataset](https://github.com/fivethirtyeight/data/tree/master/fight-songs) with all-time Big Ten Conference records from [Wikipedia](https://en.wikipedia.org/wiki/Big_Ten_Conference#All-time_school_records).
 
-The visualization identifies structural patterns in the data, including the "Winning Manifold"—a connected loop of schools with both high spirit scores and high win rates—as well as "Dead Zones" representing feature combinations that historically fail.
+## How It Works
 
-This visualization was submitted to [Bucky's Data Viz Challenge](https://data.wisc.edu/love-data-week/buckys-data-viz-challenge/).
+1. **Preprocessing**: The pipeline maps 18 schools (including 2024 expansions) to 5 engineered musical features: *Energy, Aggression, Cliche, and Complexity*.
+2. **Topological Mapping**: High-dimensional features are projected via t-SNE and clustered using DBSCAN via **KeplerMapper** to identify topological manifolds.
+3. **Statistical Validation**: A Pearson correlation suite with bootstrap confidence intervals validates the structural findings against historical win percentages.
+4. **Visualization**: An interactive HTML network graph surfaces the relationship between song features and team success tiers.
 
-### Features
+## Quick Start
 
-* **Network Visualization:** Interactive HTML network graph with schools as nodes connected by similarity relationships
-* **Topological Analysis:** TDA identifies manifold structures and clustering patterns in high-dimensional feature space
-* **Winning Manifold:** A connected loop of schools that have both high spirit scores and high win rates
-* **Dead Zones:** Feature combinations that historically fail, appearing as isolated regions or disconnected components in the visualization
-* **Interactive Exploration:** Hover interactions display school statistics including Win %, Aggression Score, and Energy Score
-* **Color Encoding:** Nodes are colored by historical win percentage
+```bash
+# Setup environment
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 
----
+# Execute full pipeline (Preprocessing → Visualization → Analysis)
+bash scripts/run_full_pipeline.sh
 
-## Methodology
+# View the interactive result
+open docs/index.html
+```
 
-This project uses KeplerMapper, a Python library for TDA, to construct a mapper graph from high-dimensional feature vectors. The input data consists of fight song characteristics from the FiveThirtyEight dataset, enriched with four engineered features:
+## Performance & Impact
 
-* **energy_score:** Normalized tempo (BPM) on a 1-10 scale
-* **aggression_score:** Composite metric weighting fight frequency and victory language, normalized to 1-10 scale
-* **cliche_score:** Lyrical conventionality based on trope_count from the original dataset
-* **complexity_score:** Normalized song duration on a 1-10 scale
-
-The mapper graph is constructed using TSNE for dimensionality reduction and DBSCAN for clustering within cover elements.
+- **Analytical Insight**: Complexity (song duration) demonstrated a statistically significant moderate positive correlation ($p=0.048$) within this specific sample size (N=18).
+- **Topological Clusters**: Identified a performance-related cluster where high-energy programs group in topological space.
+- **Reproducibility**: All random seeds are fixed (`random_state=42`) for deterministic results across varying environments.
 
 ## Documentation
 
-* **[SETUP.md](SETUP.md):** Installation and execution instructions
-* **[ARCHITECTURE.md](docs/ARCHITECTURE.md):** System design, data flow, and technical implementation details
-* **[STYLE.md](docs/STYLE.md):** Coding standards and repository conventions
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** — Core algorithms, data flow, and system design decisions.
+- **[FINDINGS.md](docs/FINDINGS.md)** — Complete statistical report and topological interpretation.
+- **[TESTING.md](docs/TESTING.md)** — Testing strategy, execution guides, and regression scenarios.
+- **[STYLE.md](docs/STYLE.md)** — Architectural invariants, coding standards, and audit checklists.
 
 ## License
 

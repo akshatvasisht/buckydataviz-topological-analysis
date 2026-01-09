@@ -1,47 +1,41 @@
-# Coding Standards & Style Guide
+# Coding & Style Standards (Audit Guide)
 
-## General Principles
-* **Professionalism:** Documentation and comments should be objective and suitable for academic submission. Avoid slang, colloquialisms, or informal language.
-* **Intent over Implementation:** Comments should explain *why* a decision was made, not *what* the code is doing (unless algorithmically complex).
-* **Reproducibility:** Code should be reproducible on Google Colab with minimal environment setup.
-* **Clarity over Cleverness:** Prioritize readable, maintainable code over optimization unless performance is critical.
+This document outlines the coding conventions, stylistic choices, and architectural rules for the Big Ten Fight Song TDA project.
 
-## Academic Submission Standards
-* **Challenge Compliance:** All submissions must meet Bucky's Data Viz Challenge requirements (public URL, 250-word description limit, FiveThirtyEight dataset as primary source).
-* **Attribution:** Credit all data sources, libraries, and external references appropriately.
-* **Documentation:** Maintain clear explanations of methodology, particularly for topological data analysis techniques that may be unfamiliar to general audiences.
+## 1. Architectural Integrity
 
-## Language Guidelines
+* **Deterministic Preprocessing**: All feature engineering MUST use fixed random seeds (`random_state=42`) to ensure reproducibility of the topological mapper.
+* **Data Immutability**: The `data/fight-songs.csv` file is treated as a read-only source. All modifications must be written to `data/processed_*.csv`.
+* **Separation of Concerns**: Data ingestion and cleaning (`preprocess.py`) are strictly separated from visualization logic (`visualize.py`) and statistical validation (`statistical_validation.py`).
 
-### Python
-* **Style:** Follow PEP 8 conventions with 4-space indentation.
-* **Naming:** 
-  - Variables and functions: `snake_case` (e.g., `aggression_score`, `compute_mapper_graph`)
-  - Classes: `PascalCase` (e.g., `MapperAnalysis`)
-  - Constants: `UPPER_SNAKE_CASE` (e.g., `MAX_DIMENSIONS`)
-* **Imports:** Group in order: standard library, third-party packages, local modules. Separate groups with blank lines.
-* **Type Hints:** Optional but encouraged for function signatures in reusable modules.
-* **Docstrings:** Use triple-quoted strings for functions that perform non-trivial operations, especially TDA algorithms.
+## 2. Python Standards (PEP 8+)
 
-### Jupyter Notebooks
-* **Cell Organization:** 
-  - First cell: Imports and environment setup
-  - Subsequent cells: Logical progression from data loading → preprocessing → analysis → visualization
-* **Markdown Headers:** Use hierarchical headers (`#`, `##`, `###`) to structure the notebook narrative.
-* **Output Management:** Clear outputs before committing to version control to reduce file size.
-* **Inline Comments:** Provide context for parameter choices (e.g., why specific KeplerMapper resolution values were selected).
+* **Type Annotations**: All function signatures must include type hints for parameters and return values.
+* **Docstrings**: Use Google-style docstrings for all public functions to explain purpose, arguments, and return types.
+* **Asynchronous Logic**: Use `subprocess` or `asyncio` only when necessary for pipeline orchestration; otherwise, prioritize synchronous, readable data flows.
+* **Error Handling**: Implement specific exceptions for data validation (e.g., `ValueError` for missing win percentages) rather than catching generic exceptions.
 
-### HTML/JavaScript (Visualization Output)
-* **Accessibility:** Include alt text and semantic HTML where applicable for wider audience reach.
-* **Browser Compatibility:** Test output in Chrome, Firefox, and Safari for consistent rendering.
-* **Standalone:** Ensure the HTML file is self-contained with no external dependencies (for GitHub Pages hosting).
+### Stylistic Guidelines
+* **Indentation**: 4 spaces per indentation level.
+* **Variable Naming**: `snake_case` for variables and functions, `PascalCase` for classes, `UPPER_SNAKE_CASE` for global constants.
+* **Line Length**: Max 88 characters (Black standard).
 
-## Data Handling
-* **File Paths:** Use relative paths for portability between local and Colab environments.
-* **Data Integrity:** Do not modify the original FiveThirtyEight CSV; create derived datasets with clear naming (e.g., `fight_songs_engineered.csv`).
-* **Feature Engineering:** Document the rationale for all engineered features (Aggression_Score, Complexity_Score, Cliché_Score) in comments and notebook markdown.
+## 3. Data Flow & Reproducibility
 
-## Git Workflow
-* **Branches:** Feature branches should be named `feature/description` (e.g., `feature/mapper-visualization`, `feature/lyrical-analysis`).
-* **Commits:** Use imperative mood ("Add feature" not "Added feature"). Include context in commit messages for non-obvious changes.
-* **No Outputs in Git:** Use `.gitignore` to exclude Jupyter notebook outputs and large generated files.
+* **Artifact Localization**: All generated plots MUST be saved to `docs/images/`. Statistical artifacts (CSV) must be saved to `data/`.
+* **Fixed Seeds**: Every step involving stochastic processing (t-SNE in KeplerMapper, bootstrapping in statistical validation) must use the project-standard seed of `42`.
+
+## 4. Testing Conventions
+
+* **Framework**: `pytest`.
+* **Isolation**: Tests must not modify the `data/` directory. Use temporary directories or mocks for file I/O where possible.
+* **Focus**: Prioritize testing the deterministic feature engineering over visual check-ins of the mapper logic.
+
+## 5. Audit Checklist
+
+When reviewing the codebase, ensure the following are met:
+1. Missing `random_state=42` in any stochastic function call.
+2. Hardcoded absolute paths (all paths MUST be relative to the repository root).
+3. Missing JSDoc-style docstrings or type hints on new functions.
+4. Redundant horizontal rules or non-ASCII characters in documentation.
+5. "Magic strings" in column mapping that should be defined as constants.

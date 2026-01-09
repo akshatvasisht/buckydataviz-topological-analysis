@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 """
-Topological Data Analysis (TDA) pipeline for Big Ten fight songs.
+Generate TDA visualization for Big Ten fight songs.
 
-This script constructs a mapper graph using KeplerMapper to identify structural
-relationships between fight songs based on high-dimensional feature space.
-The visualization reveals the "Winning Manifold" - connected regions of schools
-with both high spirit scores and high win rates.
+Uses KeplerMapper to build a graph-based representation of schools in 
+high-dimensional feature space, surfaced in an interactive HTML dashboard.
 """
 
 import os
@@ -18,97 +16,110 @@ from sklearn.preprocessing import StandardScaler
 import kmapper as km
 from kmapper import Cover
 
+# --- Constants ---
+
+# Global random seed for reproducibility
+RANDOM_STATE = 42
+
+# TDA Projection Parameters
+TSNE_PERPLEXITY = 5  # Optimized for small-N datasets (N=18)
+
+# Clustering Parameters (Mapper)
+CLUSTER_EPS = 2.0  # Neighborhood radius for DBSCAN
+CLUSTER_MIN_SAMPLES = 1  # Ensure all points are included in connectivity analysis
+COVER_CUBES = 2
+COVER_OVERLAP = 0.5
+
+# Feature Columns
+FEATURE_COLS = [
+    'energy_score', 'win_perc', 'aggression_score',
+    'cliche_score', 'complexity_score'
+]
+
+# File Paths (Relative to repository root)
+INPUT_PATH = 'data/processed_fight_songs.csv'
+OUTPUT_HTML = 'docs/index.html'
+
 
 def main() -> None:
-    """
-    Construct mapper graph from fight song features using topological data analysis.
+    """Build and export the TDA mapper graph."""
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    input_file = os.path.join(root_dir, INPUT_PATH)
+    output_file = os.path.join(root_dir, OUTPUT_HTML)
 
-    The pipeline applies TDA to identify manifold structures in the high-dimensional
-    feature space. TSNE provides a 2D lens for dimensionality reduction while preserving
-    local structure. DBSCAN clustering within cover elements identifies connected
-    components that represent the "Winning Manifold" - schools with similar fight song
-    characteristics and win rates.
-    """
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    
-    print("Loading processed fight songs data...")
-    df = pd.read_csv(os.path.join(base_dir, 'data', 'processed_fight_songs.csv'))
-    
-    print(f"Loaded {len(df)} schools")
-    
-    feature_columns = ['energy_score', 'win_perc', 'aggression_score', 
-                      'cliche_score', 'complexity_score']
-    X = df[feature_columns].values
-    
+    print(f"Loading data from {INPUT_PATH}...")
+    df = pd.read_csv(input_file)
+
+    # Prepare feature matrix
+    x_data = df[FEATURE_COLS].values
+
+    # HTML Tooltips
     tooltips = []
     for _, row in df.iterrows():
-        tooltip = (f"<b>{row['school']}</b><br><i>{row['song_name']}</i><br><hr>Win Rate: {row['win_perc']}<br>Aggression: {row['aggression_score']}/10")
+        tooltip = (
+            f"<b>{row['school']}</b><br><i>{row['song_name']}</i><br><hr>"
+            f"Win Rate: {row['win_perc']}<br>Aggression: {row['aggression_score']}/10"
+        )
         tooltips.append(tooltip)
     tooltips = np.array(tooltips)
-    
-    print("Scaling features...")
+
+    print("Executing feature scaling and TDA projection...")
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    
-    print("Creating TSNE projection (lens)...")
-    # Perplexity=5 is optimized for small datasets (N=18) to preserve local structure
-    tsne = TSNE(n_components=2, perplexity=5, random_state=42)
-    lens = tsne.fit_transform(X_scaled)
-    
-    print("Initializing KeplerMapper...")
+    x_scaled = scaler.fit_transform(x_data)
+
+    # Initialize Lens via t-SNE (Deterministic)
+    tsne = TSNE(
+        n_components=2,
+        perplexity=TSNE_PERPLEXITY,
+        random_state=RANDOM_STATE
+    )
+    lens = tsne.fit_transform(x_scaled)
+
+    # Initialize KeplerMapper
     mapper = km.KeplerMapper(verbose=1)
-    
-    print("Creating mapper graph...")
-    # DBSCAN min_samples=1 ensures all 18 schools are included (no noise dropped)
-    # eps=2.0: Increases connection distance to bridge gaps between schools
+
+    print("Constructing mapper topological graph...")
     graph = mapper.map(
         lens,
-        X=X_scaled,
-        clusterer=DBSCAN(eps=2.0, min_samples=1),
-        cover=Cover(n_cubes=2, perc_overlap=0.5)
+        X=x_scaled,
+        clusterer=DBSCAN(eps=CLUSTER_EPS, min_samples=CLUSTER_MIN_SAMPLES),
+        cover=Cover(n_cubes=COVER_CUBES, perc_overlap=COVER_OVERLAP)
     )
-    
-    print("Visualizing mapper graph...")
-    docs_dir = os.path.join(base_dir, 'docs')
-    os.makedirs(docs_dir, exist_ok=True)
+
+    # Export Visualization
+    print(f"Exporting interactive visualization to {OUTPUT_HTML}...")
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     mapper.visualize(
         graph,
-        path_html=os.path.join(base_dir, 'docs', 'index.html'),
+        path_html=output_file,
         title="Big Ten Fight Song Topology",
         custom_tooltips=tooltips,
         color_values=df['win_perc'],
         color_function_name="Win Percentage",
         node_color_function=["mean", "max", "min"],
         custom_meta={
-            "Insight": "The 'Winning Manifold' (Yellow loop) connects schools with high energy and winning records.",
-            "Dead Zones": "Isolated Purple nodes represent schools with low win rates and generic song structures.",
-            "Methodology": "TDA (Mapper) on 5-dimensional musical feature space."
+            "Insight": "Yellow manifold connects programs with high energy and win rates.",
+            "Dead Zones": "Isolated nodes represent generic musical structures.",
+            "Methodology": "TDA Mapper using t-SNE and DBSCAN clusters."
         }
     )
-    
+
+    # Cleanup KeplerMapper logo/branding for a cleaner look
+    with open(output_file, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+
+    html_content = html_content.replace('href="http://i.imgur.com/axOG6GJ.jpg"', '')
+    html_content = html_content.replace(
+        '<div class="wrap-logo">',
+        '<div class="wrap-logo" style="display:none;">'
+    )
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
     num_nodes = len(graph['nodes'])
     num_edges = sum(len(edges) for edges in graph['links'].values()) // 2
-    
-    print(f"\n{'='*60}")
-    print("Mapper Graph Statistics:")
-    print(f"{'='*60}")
-    print(f"Number of nodes: {num_nodes}")
-    print(f"Number of edges: {num_edges}")
-    print(f"{'='*60}")
-    print(f"\nVisualization saved to: docs/index.html")
-    
-    # Remove external dependencies and branding for standalone visualization
-    html_path = os.path.join(base_dir, 'docs', 'index.html')
-    with open(html_path, 'r', encoding='utf-8') as f:
-        content = f.read()
-    
-    content = content.replace('href="http://i.imgur.com/axOG6GJ.jpg"', '')
-    content = content.replace('<div class="wrap-logo">', '<div class="wrap-logo" style="display:none;">')
-    
-    with open(html_path, 'w', encoding='utf-8') as f:
-        f.write(content)
-    
-    print("Cleaned up HTML header and logo.")
+    print(f"\nFinal Graph: {num_nodes} nodes, {num_edges} edges.")
 
 
 if __name__ == '__main__':
