@@ -111,7 +111,7 @@ ENHANCED_HEADER = """
 ENHANCED_FOOTER = """
 <div class="footer">
     <p><strong>Big Ten Fight Song TDA</strong> | Bucky's Data Viz Challenge</p>
-    <p>University of Wisconsin-Madison | 2024-2025</p>
+    <p>University of Wisconsin-Madison | 2025-2026</p>
 </div>
 """
 
